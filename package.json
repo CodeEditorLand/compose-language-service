@@ -29,21 +29,21 @@
         "package": "npm pack"
     },
     "devDependencies": {
-        "@types/chai": "^4.3.12",
-        "@types/chai-as-promised": "^7.1.8",
-        "@types/mocha": "^10.0.6",
+        "@types/chai": "4.3.12",
+        "@types/chai-as-promised": "7.1.8",
+        "@types/mocha": "10.0.6",
         "@types/node": "20.x",
-        "@typescript-eslint/eslint-plugin": "^7.2.0",
-        "@typescript-eslint/parser": "^7.2.0",
-        "chai": "^5.1.0",
-        "chai-as-promised": "^7.1.1",
-        "eslint": "^8.57.0",
-        "mocha": "^10.3.0",
-        "typescript": "^5.4.2"
+        "@typescript-eslint/eslint-plugin": "7.2.0",
+        "@typescript-eslint/parser": "7.2.0",
+        "chai": "5.1.0",
+        "chai-as-promised": "7.1.1",
+        "eslint": "8.57.0",
+        "mocha": "10.3.0",
+        "typescript": "5.4.2"
     },
     "dependencies": {
-        "vscode-languageserver": "^9.0.1",
-        "vscode-languageserver-textdocument": "^1.0.11",
-        "yaml": "^2.4.1"
+        "vscode-languageserver": "9.0.1",
+        "vscode-languageserver-textdocument": "1.0.11",
+        "yaml": "2.4.1"
     }
 }
