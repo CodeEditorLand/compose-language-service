@@ -1,26 +1,6 @@
 {
 	"name": "@microsoft/compose-language-service",
-	"version": "0.0.1",
-	"private": false,
 	"description": "Language service for Docker Compose documents",
-	"keywords": [
-		"land"
-	],
-	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/ComposeLanguageService#readme",
-	"bugs": {
-		"url": "HTTPS://GitHub.Com/CodeEditorLand/ComposeLanguageService/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+HTTPS://github.com/CodeEditorLand/ComposeLanguageService.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
-	"author": {
-		"name": "🛬 Land —",
-		"email": "Land@PlayForm.Cloud",
-		"url": "HTTPS://Land.PlayForm.Cloud"
-	},
-	"type": "module",
 	"main": "lib/server.js",
 	"bin": {
 		"docker-compose-langserver": "./bin/docker-compose-langserver"
@@ -36,14 +16,10 @@
 	},
 	"devDependencies": {
 		"@playform/build": "0.0.7",
-		"@playform/document": "0.0.6",
 		"@types/chai": "4.3.16",
 		"@types/chai-as-promised": "7.1.8",
 		"@types/node": "20.x",
 		"chai": "5.1.0",
 		"chai-as-promised": "7.1.1"
-	},
-	"publishConfig": {
-		"access": "public"
 	}
 }
