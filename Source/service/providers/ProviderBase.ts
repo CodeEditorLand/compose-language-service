@@ -3,18 +3,8 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type {
-	CancellationToken,
-	HandlerResult,
-	ResultProgressReporter,
-	WorkDoneProgressReporter,
-} from "vscode-languageserver";
+import { CancellationToken, HandlerResult, ResultProgressReporter, WorkDoneProgressReporter } from 'vscode-languageserver';
 
 export abstract class ProviderBase<P, R, PR, E> {
-	public abstract on(
-		params: P,
-		token: CancellationToken,
-		workDoneProgress?: WorkDoneProgressReporter,
-		resultProgress?: ResultProgressReporter<PR>,
-	): HandlerResult<R, E>;
+    public abstract on(params: P, token: CancellationToken, workDoneProgress?: WorkDoneProgressReporter, resultProgress?: ResultProgressReporter<PR>): HandlerResult<R, E>;
 }
