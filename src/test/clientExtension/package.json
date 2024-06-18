@@ -11,10 +11,10 @@
     ],
     "main": "./dist/extension.js",
     "dependencies": {
-        "vscode-languageclient": "^8.0.0"
+        "vscode-languageclient": "^9.0.1"
     },
     "devDependencies": {
-        "@types/vscode": "1.69.0"
+        "@types/vscode": "1.90.0"
     },
     "contributes": {
         "configurationDefaults": {
