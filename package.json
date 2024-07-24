@@ -10,7 +10,7 @@
 		"unittest": "npm test -- --grep /unit/i"
 	},
 	"dependencies": {
-		"yaml": "2.4.5"
+		"yaml": "2.5.0"
 	},
 	"devDependencies": {
 		"@types/chai": "4.3.16",
