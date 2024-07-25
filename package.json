@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
 	"bin": {
 		"docker-compose-langserver": "./bin/docker-compose-langserver"
 	},
@@ -18,5 +19,26 @@
 	"scripts": {
 		"build": "tsc",
 		"unittest": "npm test -- --grep /unit/i"
+=======
+	"name": "@microsoft/compose-language-service",
+	"description": "Language service for Docker Compose documents",
+	"main": "lib/server.js",
+	"bin": {
+		"docker-compose-langserver": "./bin/docker-compose-langserver"
+	},
+	"scripts": {
+		"build": "tsc",
+		"unittest": "npm test -- --grep /unit/i"
+	},
+	"dependencies": {
+		"yaml": "2.5.0"
+	},
+	"devDependencies": {
+		"@types/chai": "4.3.16",
+		"@types/chai-as-promised": "7.1.8",
+		"@types/node": "20.x",
+		"chai": "5.1.1",
+		"chai-as-promised": "8.0.0"
+>>>>>>> ba82ebe574f36342c788faf008a1271b90306e27
 	}
 }
