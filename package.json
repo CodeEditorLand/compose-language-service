@@ -13,8 +13,8 @@
 		"yaml": "2.5.1"
 	},
 	"devDependencies": {
-		"@types/chai": "4.3.19",
-		"@types/chai-as-promised": "8.0.0",
+		"@types/chai": "5.0.0",
+		"@types/chai-as-promised": "8.0.1",
 		"@types/node": "22.x",
 		"chai": "5.1.1",
 		"chai-as-promised": "8.0.0"
