@@ -1,9 +1,0 @@
-lib/test/**
-.eslint*
-.vscode
-src
-tsconfig.json
-.github
-.azure-pipelines
-*.tgz
-.gitattributes
