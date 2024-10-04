@@ -4,24 +4,23 @@
  *--------------------------------------------------------------------------------------------*/
 
 export class Lazy<T> {
-    /* private */ #value: T | undefined;
+	/* private */ #value: T | undefined;
 
-    public constructor(private readonly valueFactory: () => T) {
-    }
+	public constructor(private readonly valueFactory: () => T) {}
 
-    public get value(): T {
-        if (this.#value === undefined) {
-            this.#value = this.valueFactory();
-        }
+	public get value(): T {
+		if (this.#value === undefined) {
+			this.#value = this.valueFactory();
+		}
 
-        return this.#value;
-    }
+		return this.#value;
+	}
 
-    public hasValue(): boolean {
-        return (this.#value !== undefined);
-    }
+	public hasValue(): boolean {
+		return this.#value !== undefined;
+	}
 
-    public clear(): void {
-        this.#value = undefined;
-    }
+	public clear(): void {
+		this.#value = undefined;
+	}
 }
