@@ -224,6 +224,7 @@ export class ComposeLanguageService implements Disposable {
 					const doc = this.documentManager.get(
 						params.textDocument.uri,
 					);
+
 					if (!doc) {
 						throw new ResponseError(
 							ErrorCodes.InvalidParams,
@@ -292,6 +293,7 @@ export class ComposeLanguageService implements Disposable {
 			return await runWithContext(actionContext, callback);
 		} catch (error) {
 			let responseError: ResponseError<E>;
+
 			let stack: string | undefined;
 
 			if (error instanceof ResponseError) {
@@ -324,6 +326,7 @@ export class ComposeLanguageService implements Disposable {
 			return responseError;
 		} finally {
 			const endTime = process.hrtime.bigint();
+
 			const elapsedMicroseconds = Number(
 				(endTime - startTime) / BigInt(1000),
 			);

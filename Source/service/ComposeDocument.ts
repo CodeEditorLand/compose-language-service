@@ -75,6 +75,7 @@ export class ComposeDocument {
 			typeof line === "number"
 				? Position.create(line, 0)
 				: Position.create(line.line, 0);
+
 		const endOfLine = Position.create(startOfLine.line, MaximumLineLength);
 
 		if (startOfLine.line > this.textDocument.lineCount) {
@@ -105,6 +106,7 @@ export class ComposeDocument {
 					DocumentSettings | null,
 					never
 				>(DocumentSettingsRequest.type, { textDocument: this.id });
+
 				if (result) {
 					this.documentSettings = result;
 				}
@@ -137,10 +139,12 @@ export class ComposeDocument {
 		params: ExtendedPositionParams,
 	): Promise<PositionInfo> {
 		const { tabSize } = await this.getSettings();
+
 		const partialPositionInfo = this.getFirstLinePositionInfo(
 			params,
 			tabSize,
 		);
+
 		const fullPathParts = [...partialPositionInfo.pathParts];
 
 		// We no longer need to consider position, since the cursor is inherently below this point
@@ -153,7 +157,9 @@ export class ComposeDocument {
 			i--
 		) {
 			const currentLine = this.lineAt(i);
+
 			let indentDepth = MaximumLineLength;
+
 			let result: RegExpExecArray | null;
 
 			/* eslint-disable @typescript-eslint/no-non-null-assertion */
@@ -228,6 +234,7 @@ export class ComposeDocument {
 
 		// For tab size, look for the first key with nonzero indentation. If none found, assume 2.
 		let tabSize = 2;
+
 		const indentedKeyLineMatch =
 			/^(?<indentation>[ ]+)(?<key>[.\w-]+:\s*)$/im.exec(documentText);
 
@@ -255,7 +262,9 @@ export class ComposeDocument {
 		tabSize: number,
 	): { pathParts: string[]; cursorIndentDepth: number } {
 		const currentLine = this.lineAt(params.position);
+
 		const pathParts: string[] = [];
+
 		let cursorIndentDepth = 0;
 
 		let result: RegExpExecArray | null;
@@ -281,11 +290,14 @@ export class ComposeDocument {
 			const itemSepPosition = currentLine.indexOf(
 				result.groups!["itemInd"],
 			);
+
 			const keySepPosition = currentLine.indexOf(
 				result.groups!["keyInd"],
 				itemSepPosition,
 			);
+
 			const indentLength = result.groups!["indent"].length;
+
 			const keyName = result.groups!["keyName"];
 
 			cursorIndentDepth = indentLength / tabSize;
@@ -317,7 +329,9 @@ export class ComposeDocument {
 			const keySepPosition = currentLine.indexOf(
 				result.groups!["keyInd"],
 			);
+
 			const indentLength = result.groups!["indent"].length;
+
 			const keyName = result.groups!["keyName"];
 
 			cursorIndentDepth = indentLength / tabSize;
@@ -342,6 +356,7 @@ export class ComposeDocument {
 			const itemSepPosition = currentLine.indexOf(
 				result.groups!["itemInd"],
 			);
+
 			const indentLength = result.groups!["indent"].length;
 
 			cursorIndentDepth = indentLength / tabSize;
@@ -420,6 +435,9 @@ const LineWithCommentRegex = /^.*(?<commentSep>#).*$/im;
 
 // Constants for marking non-key parts of a logical path
 const Value = "<value>";
+
 const Item = "<item>";
+
 const Sep = "<sep>";
+
 const Comment = "<comment>";

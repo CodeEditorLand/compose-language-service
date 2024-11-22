@@ -55,6 +55,7 @@ export class TelemetryAggregator implements Disposable {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			const error =
 				err instanceof Error ? err : Error((err as any).toString());
+
 			const telemetryFailedEvent = initEvent(
 				"telemetryaggregatorfailure",
 			);
@@ -73,18 +74,23 @@ export class TelemetryAggregator implements Disposable {
 
 	private getAggregatedEvents(): TelemetryEvent[] {
 		const aggregated: TelemetryEvent[] = [];
+
 		const eventGroups = new Map<string, TelemetryEvent[]>();
 
 		// Group events according to their grouping strategy
 		for (const evt of this.eventBuffer) {
 			let key: string;
+
 			switch (evt.groupingStrategy) {
 				case "eventNameAndProperties":
 					key = evt.eventName + JSON.stringify(evt.properties);
+
 					break;
+
 				case "eventName":
 				default:
 					key = evt.eventName;
+
 					break;
 			}
 
@@ -107,6 +113,7 @@ export class TelemetryAggregator implements Disposable {
 				(events
 					.map((e) => e.measurements.duration ?? undefined)
 					.filter((d) => d !== undefined) as number[]) || [];
+
 			const stats = logNormal(durations);
 
 			aggregatedEvent.measurements.count = events.length;

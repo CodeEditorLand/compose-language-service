@@ -28,6 +28,7 @@ export type DocumentSettingsParams = TextDocumentParams;
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace DocumentSettingsRequest {
 	export const method = "$/textDocument/documentSettings" as const;
+
 	export const type = new RequestType<
 		DocumentSettingsParams,
 		DocumentSettings | null,
@@ -42,6 +43,7 @@ export type DocumentSettingsNotificationParams = DocumentSettingsParams &
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace DocumentSettingsNotification {
 	export const method = "$/textDocument/documentSettings/didChange" as const;
+
 	export const type =
 		new NotificationType<DocumentSettingsNotificationParams>(method);
 }

@@ -16,8 +16,10 @@ import { yamlRangeToLspRange } from "../utils/yamlRangeToLspRange";
 import { ProviderBase } from "./ProviderBase";
 
 const dockerHubImageRegex = /^(?<imageName>[.\w-]+)(?<tag>:[.\w-]+)?$/i;
+
 const dockerHubNamespacedImageRegex =
 	/^(?<namespace>[a-z0-9]+)\/(?<imageName>[.\w-]+)(?<tag>:[.\w-]+)?$/i;
+
 const mcrImageRegex =
 	/^mcr.microsoft.com\/(?<namespace>([a-z0-9]+\/)+)(?<imageName>[.\w-]+)(?<tag>:[.\w-]+)?$/i;
 
@@ -35,11 +37,13 @@ export class ImageLinkProvider extends ProviderBase<
 		ctx.telemetry.properties.isActivationEvent = "true"; // This happens automatically so we'll treat it as isActivationEvent === true
 
 		const results: DocumentLink[] = [];
+
 		const imageTypes = new Set<string>();
 
 		const serviceMap = params.document.yamlDocument.value.getIn([
 			"services",
 		]);
+
 		if (isMap(serviceMap)) {
 			for (const service of serviceMap.items) {
 				// Within each loop we'll check for cancellation (though this is expected to be very fast)
@@ -49,7 +53,9 @@ export class ImageLinkProvider extends ProviderBase<
 
 				if (isMap(service.value)) {
 					const image = service.value.getIn(["image"], true);
+
 					const hasBuild = service.value.has("build");
+
 					if (
 						!hasBuild &&
 						isScalar(image) &&
@@ -101,7 +107,9 @@ export class ImageLinkProvider extends ProviderBase<
 		imageTypes: Set<string>,
 	): { uri: string; start: number; length: number } | undefined {
 		let match: RegExpExecArray | null;
+
 		let namespace: string | undefined;
+
 		let imageName: string | undefined;
 
 		if (

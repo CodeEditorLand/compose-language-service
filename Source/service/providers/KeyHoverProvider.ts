@@ -31,6 +31,7 @@ export class KeyHoverProvider extends ProviderBase<
 		ctx.telemetry.groupingStrategy = "eventName"; // The below `hoverMatch` property that is attached will be lossy, but that's not serious; at global scales it will still be representative of usage
 		const contentFormat =
 			ctx.clientCapabilities.textDocument?.hover?.contentFormat;
+
 		const preferMarkdown = contentFormat?.length
 			? contentFormat?.[0] === MarkupKind.Markdown
 			: false;
@@ -45,6 +46,7 @@ export class KeyHoverProvider extends ProviderBase<
 			}
 
 			const line = params.document.lineAt(params.position);
+
 			const lineMatch = KeyValueRegex.exec(line);
 
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion

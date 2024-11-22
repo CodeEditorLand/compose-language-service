@@ -57,6 +57,7 @@ export class CompletionCollection extends Array<ExtendedCompletionItem> {
 		}
 
 		const line = params.document.lineAt(params.position);
+
 		return this.filter(
 			(eci) =>
 				(params.basicCompletions && !eci.isAdvancedComposeCompletion) ||

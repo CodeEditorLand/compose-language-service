@@ -67,6 +67,7 @@ export class MultiCompletionProvider extends ProviderBase<
 		};
 
 		const results: CompletionItem[] = [];
+
 		const respondingCollections: string[] = [];
 
 		for (const collection of this.completionCollections) {

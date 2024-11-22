@@ -29,7 +29,9 @@ export function logNormal(values: number[]): {
 	}
 
 	const n = values.length;
+
 	const lnValues = values.map((a) => ln(a));
+
 	const sqLnValues = lnValues.map((a) => sq(a));
 
 	// Mu is the mean of the natural logs of the values
@@ -73,5 +75,6 @@ function ln(value: number): number {
  */
 function round(value: number, precision: number = 3): number {
 	const multiplier = Math.pow(10, precision);
+
 	return Math.round(value * multiplier) / multiplier;
 }
