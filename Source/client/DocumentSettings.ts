@@ -14,6 +14,7 @@ export type DocumentSettingsClientCapabilities = {
 
 // TODO: can we get these from @types/vscode instead? It seems there's some type conflict between `Thenable<T>` from @types/vscode and vscode-jsonrpc preventing @types/vscode from working nicely
 export const LF = 1;
+
 export const CRLF = 2;
 type EndOfLine = typeof LF | typeof CRLF;
 
