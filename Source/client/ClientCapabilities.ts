@@ -14,6 +14,7 @@ export type ComposeLanguageClientCapabilities = Omit<
 > & {
 	readonly experimental?: {
 		readonly documentSettings?: DocumentSettingsClientCapabilities;
+
 		readonly alternateYamlLanguageService?: AlternateYamlLanguageServiceClientCapabilities;
 	};
 };

@@ -34,6 +34,7 @@ export class ImageLinkProvider extends ProviderBase<
 		token: CancellationToken,
 	): DocumentLink[] | undefined {
 		const ctx = getCurrentContext();
+
 		ctx.telemetry.properties.isActivationEvent = "true"; // This happens automatically so we'll treat it as isActivationEvent === true
 
 		const results: DocumentLink[] = [];
@@ -148,6 +149,7 @@ export class ImageLinkProvider extends ProviderBase<
 				length: 18 + namespace.length + 1 + imageName.length, // 18 is the length of 'mcr.microsoft.com/', 1 is the length of the '/' after namespace
 			};
 		}
+
 		return undefined;
 	}
 }

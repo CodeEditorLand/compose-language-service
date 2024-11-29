@@ -39,6 +39,7 @@ export class ComposeDocument {
 	private documentSettings: DocumentSettings | undefined;
 
 	/* private */ #textDocument: TextDocument;
+
 	public get textDocument(): TextDocument {
 		return this.#textDocument;
 	}
@@ -59,6 +60,7 @@ export class ComposeDocument {
 
 	private update(doc: TextDocument): ComposeDocument {
 		this.#textDocument = doc;
+
 		this.yamlDocument.clear();
 
 		return this;
@@ -153,7 +155,9 @@ export class ComposeDocument {
 
 		for (
 			let i = params.position.line - 1;
+
 			i >= 0 && currentIndentDepth > 0;
+
 			i--
 		) {
 			const currentLine = this.lineAt(i);
@@ -169,6 +173,7 @@ export class ComposeDocument {
 				if (indentDepth < currentIndentDepth) {
 					// If this line is an ItemValue and less indented, then add `<item>` to the path
 					currentIndentDepth = indentDepth;
+
 					fullPathParts.unshift(Item);
 				}
 			} else if ((result = KeyValueRegex.exec(currentLine))) {
@@ -182,6 +187,7 @@ export class ComposeDocument {
 					// YAML is too permissive and allows for items to have the same indentation as their parent key, so need to account for that
 					// If this line is a KeyValue (which also includes keys alone) and less indented, add that key to the path
 					currentIndentDepth = indentDepth;
+
 					fullPathParts.unshift(result.groups!["keyName"]);
 				}
 			}
@@ -305,20 +311,26 @@ export class ComposeDocument {
 			if (params.position.character > keySepPosition) {
 				// If the position is after the key separator, we're in the value
 				pathParts.unshift(Value);
+
 				pathParts.unshift(keyName);
+
 				pathParts.unshift(Item);
 			} else if (params.position.character === keySepPosition) {
 				// If the position is at the key separator, we're on the separator
 				pathParts.unshift(Sep);
+
 				pathParts.unshift(keyName);
+
 				pathParts.unshift(Item);
 			} else if (params.position.character > itemSepPosition) {
 				// Otherwise if the position is after the item separator, we're in the key
 				pathParts.unshift(keyName);
+
 				pathParts.unshift(Item);
 			} else if (params.position.character === itemSepPosition) {
 				// If we're at the item separator, we're at the item separator (of course)
 				pathParts.unshift(Sep);
+
 				pathParts.unshift(Item);
 			} else if (params.position.character < indentLength) {
 				// Otherwise if we're somewhere within the indentation, we're not at a "position" within this line, but we do need to consider the indent depth
@@ -339,10 +351,12 @@ export class ComposeDocument {
 			if (params.position.character > keySepPosition) {
 				// If the position is after the key separator, we're in the value
 				pathParts.unshift(Value);
+
 				pathParts.unshift(keyName);
 			} else if (params.position.character === keySepPosition) {
 				// If the position is at the key separator, we're on the separator
 				pathParts.unshift(Sep);
+
 				pathParts.unshift(keyName);
 			} else if (params.position.character >= indentLength) {
 				// If the position is after the indent, we're in the key
@@ -364,10 +378,12 @@ export class ComposeDocument {
 			if (params.position.character > itemSepPosition) {
 				// If the position is after the item separator, we're in the value
 				pathParts.unshift(Value);
+
 				pathParts.unshift(Item);
 			} else if (params.position.character === itemSepPosition) {
 				// If we're at the item separator, we're at the item separator (of course)
 				pathParts.unshift(Sep);
+
 				pathParts.unshift(Item);
 			} else if (params.position.character < indentLength) {
 				// Otherwise if we're somewhere within the indentation, we're not at a "position" within this line, but we do need to consider the indent depth

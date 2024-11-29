@@ -9,6 +9,7 @@ import { TextDocumentParams } from "../service/ExtendedParams";
 
 export type DocumentSettingsClientCapabilities = {
 	readonly request: boolean;
+
 	readonly notify: boolean;
 };
 
@@ -20,6 +21,7 @@ type EndOfLine = typeof LF | typeof CRLF;
 
 export interface DocumentSettings {
 	tabSize: number;
+
 	eol: EndOfLine;
 }
 

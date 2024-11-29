@@ -13,6 +13,7 @@ const FlushIntervalMilliseconds = 60 * 1000;
 
 export class TelemetryAggregator implements Disposable {
 	private eventBuffer: TelemetryEvent[] = [];
+
 	private readonly timer: NodeJS.Timeout;
 
 	public constructor(
@@ -61,8 +62,11 @@ export class TelemetryAggregator implements Disposable {
 			);
 
 			telemetryFailedEvent.properties.result = "Failed";
+
 			telemetryFailedEvent.properties.error = error.name;
+
 			telemetryFailedEvent.properties.errorMessage = error.message;
+
 			telemetryFailedEvent.properties.stack = error.stack;
 
 			this.connection.telemetry.logEvent(telemetryFailedEvent);
@@ -117,8 +121,11 @@ export class TelemetryAggregator implements Disposable {
 			const stats = logNormal(durations);
 
 			aggregatedEvent.measurements.count = events.length;
+
 			aggregatedEvent.measurements.durationMu = stats.mu;
+
 			aggregatedEvent.measurements.durationSigma = stats.sigma;
+
 			aggregatedEvent.measurements.durationMedian = stats.median;
 
 			// Aggregate the properties--this will apply all properties from all events, with the recent events overriding prior events if there is a conflict

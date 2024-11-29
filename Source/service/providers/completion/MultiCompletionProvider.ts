@@ -81,6 +81,7 @@ export class MultiCompletionProvider extends ProviderBase<
 
 			if (subresults?.length) {
 				respondingCollections.push(collection.name);
+
 				results.push(...subresults);
 			}
 

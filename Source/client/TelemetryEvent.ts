@@ -41,9 +41,13 @@ export interface TelemetryEvent {
 
 interface TelemetryProperties {
 	isActivationEvent: "true" | "false";
+
 	result: "Succeeded" | "Failed" | "Canceled";
+
 	error?: string;
+
 	errorMessage?: string;
+
 	stack?: string;
 
 	[key: string]: string | undefined;
@@ -55,8 +59,11 @@ interface TelemetryMeasurements {
 
 interface AggregateTelemetryMeasurements {
 	count?: number;
+
 	durationMu?: number;
+
 	durationSigma?: number;
+
 	durationMedian?: number;
 }
 

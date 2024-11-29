@@ -28,6 +28,7 @@ export class KeyHoverProvider extends ProviderBase<
 		token: CancellationToken,
 	): Promise<Hover | undefined> {
 		const ctx = getCurrentContext();
+
 		ctx.telemetry.groupingStrategy = "eventName"; // The below `hoverMatch` property that is attached will be lossy, but that's not serious; at global scales it will still be representative of usage
 		const contentFormat =
 			ctx.clientCapabilities.textDocument?.hover?.contentFormat;
@@ -88,6 +89,7 @@ export class KeyHoverProvider extends ProviderBase<
 interface ComposeKeyInformation {
 	pathRegex: RegExp; // Must contain a group called `keyName` that matches the key
 	plaintextContents: string;
+
 	markdownContents?: string;
 }
 

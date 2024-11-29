@@ -26,6 +26,7 @@ export interface ExtendedPositionParams
 
 export interface PositionInfo {
 	path: string;
+
 	indentDepth: number;
 }
 
@@ -33,6 +34,8 @@ export interface ExtendedCompletionParams
 	extends CompletionParams,
 		ExtendedPositionParams {
 	positionInfo: PositionInfo;
+
 	basicCompletions: boolean;
+
 	advancedCompletions: boolean;
 }

@@ -13,7 +13,9 @@ const als = new async.AsyncLocalStorage<ActionContext>();
 
 export interface ActionContext {
 	clientCapabilities: ComposeLanguageClientCapabilities;
+
 	connection: Connection;
+
 	telemetry: TelemetryEvent;
 }
 

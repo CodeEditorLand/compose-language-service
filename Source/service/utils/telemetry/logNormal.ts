@@ -13,7 +13,9 @@
  */
 export function logNormal(values: number[]): {
 	mu: number;
+
 	sigma: number;
+
 	median: number;
 } {
 	if (!values?.length) {

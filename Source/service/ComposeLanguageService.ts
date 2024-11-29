@@ -87,8 +87,11 @@ const DefaultAlternateYamlLanguageServiceClientCapabilities: AlternateYamlLangua
 export class ComposeLanguageService implements Disposable {
 	private readonly documentManager: TextDocuments<ComposeDocument> =
 		new TextDocuments(ComposeDocument.DocumentManagerConfig);
+
 	private readonly subscriptions: Disposable[] = [];
+
 	private readonly telemetryAggregator: TelemetryAggregator;
+
 	private readonly _capabilities: ServerCapabilities = DefaultCapabilities;
 
 	public constructor(
@@ -298,6 +301,7 @@ export class ComposeLanguageService implements Disposable {
 
 			if (error instanceof ResponseError) {
 				responseError = error;
+
 				stack = error.stack;
 			} else if (error instanceof Error) {
 				responseError = new ResponseError(
@@ -305,6 +309,7 @@ export class ComposeLanguageService implements Disposable {
 					error.message,
 					error as unknown as E,
 				);
+
 				stack = error.stack;
 			} else {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -317,10 +322,13 @@ export class ComposeLanguageService implements Disposable {
 			}
 
 			actionContext.telemetry.properties.result = "Failed";
+
 			actionContext.telemetry.properties.error =
 				responseError.code.toString();
+
 			actionContext.telemetry.properties.errorMessage =
 				responseError.message;
+
 			actionContext.telemetry.properties.stack = stack;
 
 			return responseError;
@@ -330,6 +338,7 @@ export class ComposeLanguageService implements Disposable {
 			const elapsedMicroseconds = Number(
 				(endTime - startTime) / BigInt(1000),
 			);
+
 			actionContext.telemetry.measurements.duration = elapsedMicroseconds;
 
 			// The aggregator will internally handle suppressing / etc.

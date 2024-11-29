@@ -7,6 +7,7 @@ import { Disposable, DocumentUri } from "vscode-languageserver";
 
 export interface DebounceId {
 	uri: DocumentUri;
+
 	callId: string; // TODO: convert to an enum of debounceable calls?
 }
 
@@ -23,6 +24,7 @@ export function debounce(
 	// If there's an existing call queued up, wipe it out (can't simply refresh as the inputs to the callback may be different)
 	if (activeDebounces[idString]) {
 		activeDebounces[idString].dispose();
+
 		delete activeDebounces[idString];
 	}
 
@@ -30,6 +32,7 @@ export function debounce(
 	const timeout = setTimeout(() => {
 		// Clear the callback since we're about to fire it
 		activeDebounces[idString].dispose();
+
 		delete activeDebounces[idString];
 
 		// Fire it

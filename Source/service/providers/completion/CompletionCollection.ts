@@ -68,5 +68,6 @@ export class CompletionCollection extends Array<ExtendedCompletionItem> {
 
 interface CompletionLocationRequirements {
 	logicalPaths?: RegExp[];
+
 	indentationDepth?: number;
 }
