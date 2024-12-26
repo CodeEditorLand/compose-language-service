@@ -8,19 +8,15 @@
  * we can disable some of the capabilities of this extension to avoid duplicate functionality.
  */
 export type AlternateYamlLanguageServiceClientCapabilities = {
-	// Diagnostics features
-	readonly syntaxValidation: boolean;
+    // Diagnostics features
+    readonly syntaxValidation: boolean,
+    readonly schemaValidation: boolean,
 
-	readonly schemaValidation: boolean;
-
-	// LSP features
-	readonly basicCompletions: boolean;
-
-	readonly advancedCompletions: boolean;
-
-	readonly hover: boolean;
-
-	readonly imageLinks: boolean;
-
-	readonly formatting: boolean;
+    // LSP features
+    readonly basicCompletions: boolean,
+    readonly advancedCompletions: boolean,
+    readonly serviceStartupCodeLens: boolean,
+    readonly hover: boolean,
+    readonly imageLinks: boolean,
+    readonly formatting: boolean,
 };
