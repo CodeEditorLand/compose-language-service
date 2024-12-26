@@ -4,345 +4,257 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	CancellationToken,
-	Connection,
-	Disposable,
-	ErrorCodes,
-	Event,
-	InitializeParams,
-	ResponseError,
-	ServerCapabilities,
-	ServerRequestHandler,
-	TextDocumentChangeEvent,
-	TextDocuments,
-	TextDocumentSyncKind,
-} from "vscode-languageserver";
-
-import { AlternateYamlLanguageServiceClientCapabilities } from "../client/AlternateYamlLanguageServiceClientCapabilities";
-import { ComposeLanguageClientCapabilities } from "../client/ClientCapabilities";
-import {
-	DocumentSettingsNotification,
-	DocumentSettingsNotificationParams,
-} from "../client/DocumentSettings";
-import { initEvent } from "../client/TelemetryEvent";
-import { ComposeDocument } from "./ComposeDocument";
-import { ExtendedParams, TextDocumentParams } from "./ExtendedParams";
-import { MultiCompletionProvider } from "./providers/completion/MultiCompletionProvider";
-import { DiagnosticProvider } from "./providers/DiagnosticProvider";
-import { DocumentFormattingProvider } from "./providers/DocumentFormattingProvider";
-import { ImageLinkProvider } from "./providers/ImageLinkProvider";
-import { KeyHoverProvider } from "./providers/KeyHoverProvider";
-import { ProviderBase } from "./providers/ProviderBase";
-import { ActionContext, runWithContext } from "./utils/ActionContext";
-import { TelemetryAggregator } from "./utils/telemetry/TelemetryAggregator";
+    CancellationToken,
+    Connection,
+    Disposable,
+    ErrorCodes,
+    Event,
+    InitializeParams,
+    ResponseError,
+    ServerCapabilities,
+    ServerRequestHandler,
+    TextDocumentChangeEvent,
+    TextDocuments,
+    TextDocumentSyncKind,
+}
+    from 'vscode-languageserver';
+import { AlternateYamlLanguageServiceClientCapabilities } from '../client/AlternateYamlLanguageServiceClientCapabilities';
+import { ComposeLanguageClientCapabilities } from '../client/ClientCapabilities';
+import { DocumentSettingsNotificationParams, DocumentSettingsNotification } from '../client/DocumentSettings';
+import { initEvent } from '../client/TelemetryEvent';
+import { ComposeDocument } from './ComposeDocument';
+import { ExtendedParams, TextDocumentParams } from './ExtendedParams';
+import { MultiCompletionProvider } from './providers/completion/MultiCompletionProvider';
+import { DiagnosticProvider } from './providers/DiagnosticProvider';
+import { DocumentFormattingProvider } from './providers/DocumentFormattingProvider';
+import { ImageLinkProvider } from './providers/ImageLinkProvider';
+import { KeyHoverProvider } from './providers/KeyHoverProvider';
+import { ProviderBase } from './providers/ProviderBase';
+import { ServiceStartupCodeLensProvider } from './providers/ServiceStartupCodeLensProvider';
+import { ActionContext, runWithContext } from './utils/ActionContext';
+import { TelemetryAggregator } from './utils/telemetry/TelemetryAggregator';
 
 const DefaultCapabilities: ServerCapabilities = {
-	// Text document synchronization
-	textDocumentSync: {
-		openClose: true,
-		change: TextDocumentSyncKind.Incremental,
-		willSave: false,
-		willSaveWaitUntil: false,
-		save: false,
-	},
+    // Text document synchronization
+    textDocumentSync: {
+        openClose: true,
+        change: TextDocumentSyncKind.Incremental,
+        willSave: false,
+        willSaveWaitUntil: false,
+        save: false,
+    },
 
-	// Both basic and advanced completions
-	completionProvider: {
-		triggerCharacters: ["-", ":", " ", '"'],
-		resolveProvider: false,
-	},
+    // Both basic and advanced completions
+    completionProvider: {
+        triggerCharacters: ['-', ':', ' ', '"'],
+        resolveProvider: false,
+    },
 
-	// Hover over YAML keys
-	hoverProvider: true,
+    // Code lenses for starting services
+    codeLensProvider: {
+        resolveProvider: false,
+    },
 
-	// Links to Docker Hub on image names
-	documentLinkProvider: {
-		resolveProvider: false,
-	},
+    // Hover over YAML keys
+    hoverProvider: true,
 
-	// YAML formatting
-	documentFormattingProvider: true,
+    // Links to Docker Hub on image names
+    documentLinkProvider: {
+        resolveProvider: false,
+    },
 
-	// Workspace features
-	workspace: {
-		workspaceFolders: {
-			supported: true,
-		},
-	},
+    // YAML formatting
+    documentFormattingProvider: true,
+
+    // Workspace features
+    workspace: {
+        workspaceFolders: {
+            supported: true,
+        },
+    },
 };
 
 // Default settings for a client with no alternate YAML language service
-const DefaultAlternateYamlLanguageServiceClientCapabilities: AlternateYamlLanguageServiceClientCapabilities =
-	{
-		syntaxValidation: false,
-		schemaValidation: false,
+const DefaultAlternateYamlLanguageServiceClientCapabilities: AlternateYamlLanguageServiceClientCapabilities = {
+    syntaxValidation: false,
+    schemaValidation: false,
 
-		basicCompletions: false,
-		advancedCompletions: false,
-		hover: false,
-		imageLinks: false,
-		formatting: false,
-	};
+    basicCompletions: false,
+    advancedCompletions: false,
+    serviceStartupCodeLens: false,
+    hover: false,
+    imageLinks: false,
+    formatting: false,
+};
 
 export class ComposeLanguageService implements Disposable {
-	private readonly documentManager: TextDocuments<ComposeDocument> =
-		new TextDocuments(ComposeDocument.DocumentManagerConfig);
+    private readonly documentManager: TextDocuments<ComposeDocument> = new TextDocuments(ComposeDocument.DocumentManagerConfig);
+    private readonly subscriptions: Disposable[] = [];
+    private readonly telemetryAggregator: TelemetryAggregator;
+    private readonly _capabilities: ServerCapabilities = DefaultCapabilities;
 
-	private readonly subscriptions: Disposable[] = [];
+    public constructor(public readonly connection: Connection, private readonly clientParams: InitializeParams) {
+        let altYamlCapabilities = (clientParams.capabilities as ComposeLanguageClientCapabilities).experimental?.alternateYamlLanguageService;
 
-	private readonly telemetryAggregator: TelemetryAggregator;
+        if (altYamlCapabilities) {
+            connection.console.info('An alternate YAML language service is present. The Compose language service will not enable features already provided by the alternate.');
+        } else {
+            altYamlCapabilities = DefaultAlternateYamlLanguageServiceClientCapabilities;
+        }
 
-	private readonly _capabilities: ServerCapabilities = DefaultCapabilities;
+        // Hook up the document listeners, which create a Disposable which will be added to this.subscriptions
 
-	public constructor(
-		public readonly connection: Connection,
-		private readonly clientParams: InitializeParams,
-	) {
-		let altYamlCapabilities = (
-			clientParams.capabilities as ComposeLanguageClientCapabilities
-		).experimental?.alternateYamlLanguageService;
+        if (altYamlCapabilities.syntaxValidation && altYamlCapabilities.schemaValidation) {
+            // Noop. No server-side capability needs to be set for diagnostics because it is based on pushing from server to client.
+        } else {
+            this.createDocumentManagerHandler(this.documentManager.onDidChangeContent, new DiagnosticProvider(clientParams.initializationOptions?.diagnosticDelay, !altYamlCapabilities.syntaxValidation, !altYamlCapabilities.schemaValidation));
+        }
 
-		if (altYamlCapabilities) {
-			connection.console.info(
-				"An alternate YAML language service is present. The Compose language service will not enable features already provided by the alternate.",
-			);
-		} else {
-			altYamlCapabilities =
-				DefaultAlternateYamlLanguageServiceClientCapabilities;
-		}
+        // End of document listeners
 
-		// Hook up the document listeners, which create a Disposable which will be added to this.subscriptions
+        // Hook up all the applicable LSP listeners, which do not create Disposables for some reason
 
-		if (
-			altYamlCapabilities.syntaxValidation &&
-			altYamlCapabilities.schemaValidation
-		) {
-			// Noop. No server-side capability needs to be set for diagnostics because it is based on pushing from server to client.
-		} else {
-			this.createDocumentManagerHandler(
-				this.documentManager.onDidChangeContent,
-				new DiagnosticProvider(
-					clientParams.initializationOptions?.diagnosticDelay,
-					!altYamlCapabilities.syntaxValidation,
-					!altYamlCapabilities.schemaValidation,
-				),
-			);
-		}
+        if (altYamlCapabilities.basicCompletions && altYamlCapabilities.advancedCompletions) {
+            this._capabilities.completionProvider = undefined;
+        } else {
+            this.createLspHandler(this.connection.onCompletion, new MultiCompletionProvider(!altYamlCapabilities.basicCompletions, !altYamlCapabilities.advancedCompletions));
+        }
 
-		// End of document listeners
+        if (altYamlCapabilities.serviceStartupCodeLens) {
+            this._capabilities.codeLensProvider = undefined;
+        } else {
+            this.createLspHandler(this.connection.onCodeLens, new ServiceStartupCodeLensProvider());
+        }
 
-		// Hook up all the applicable LSP listeners, which do not create Disposables for some reason
+        if (altYamlCapabilities.hover) {
+            this._capabilities.hoverProvider = undefined;
+        } else {
+            this.createLspHandler(this.connection.onHover, new KeyHoverProvider());
+        }
 
-		if (
-			altYamlCapabilities.basicCompletions &&
-			altYamlCapabilities.advancedCompletions
-		) {
-			this._capabilities.completionProvider = undefined;
-		} else {
-			this.createLspHandler(
-				this.connection.onCompletion,
-				new MultiCompletionProvider(
-					!altYamlCapabilities.basicCompletions,
-					!altYamlCapabilities.advancedCompletions,
-				),
-			);
-		}
+        if (altYamlCapabilities.imageLinks) {
+            this._capabilities.documentLinkProvider = undefined;
+        } else {
+            this.createLspHandler(this.connection.onDocumentLinks, new ImageLinkProvider());
+        }
 
-		if (altYamlCapabilities.hover) {
-			this._capabilities.hoverProvider = undefined;
-		} else {
-			this.createLspHandler(
-				this.connection.onHover,
-				new KeyHoverProvider(),
-			);
-		}
+        if (altYamlCapabilities.formatting) {
+            this._capabilities.documentFormattingProvider = undefined;
+        } else {
+            this.createLspHandler(this.connection.onDocumentFormatting, new DocumentFormattingProvider());
+        }
 
-		if (altYamlCapabilities.imageLinks) {
-			this._capabilities.documentLinkProvider = undefined;
-		} else {
-			this.createLspHandler(
-				this.connection.onDocumentLinks,
-				new ImageLinkProvider(),
-			);
-		}
+        // End of LSP listeners
 
-		if (altYamlCapabilities.formatting) {
-			this._capabilities.documentFormattingProvider = undefined;
-		} else {
-			this.createLspHandler(
-				this.connection.onDocumentFormatting,
-				new DocumentFormattingProvider(),
-			);
-		}
+        // Hook up one additional notification handler
+        this.connection.onNotification(DocumentSettingsNotification.method, (params) => this.onDidChangeDocumentSettings(params));
 
-		// End of LSP listeners
+        // Start the document listener
+        this.documentManager.listen(this.connection);
 
-		// Hook up one additional notification handler
-		this.connection.onNotification(
-			DocumentSettingsNotification.method,
-			(params) => this.onDidChangeDocumentSettings(params),
-		);
+        // Start the telemetry aggregator
+        this.subscriptions.push(this.telemetryAggregator = new TelemetryAggregator(this.connection, clientParams.initializationOptions?.telemetryAggregationInterval));
+    }
 
-		// Start the document listener
-		this.documentManager.listen(this.connection);
+    public dispose(): void {
+        for (const subscription of this.subscriptions) {
+            subscription.dispose();
+        }
+    }
 
-		// Start the telemetry aggregator
-		this.subscriptions.push(
-			(this.telemetryAggregator = new TelemetryAggregator(
-				this.connection,
-				clientParams.initializationOptions?.telemetryAggregationInterval,
-			)),
-		);
-	}
+    public get capabilities(): ServerCapabilities {
+        return this._capabilities;
+    }
 
-	public dispose(): void {
-		for (const subscription of this.subscriptions) {
-			subscription.dispose();
-		}
-	}
+    private onDidChangeDocumentSettings(params: DocumentSettingsNotificationParams): void {
+        // TODO: Telemetrize this?
+        const composeDoc = this.documentManager.get(params.textDocument.uri);
 
-	public get capabilities(): ServerCapabilities {
-		return this._capabilities;
-	}
+        if (composeDoc) {
+            composeDoc.updateSettings(params);
+        }
+    }
 
-	private onDidChangeDocumentSettings(
-		params: DocumentSettingsNotificationParams,
-	): void {
-		// TODO: Telemetrize this?
-		const composeDoc = this.documentManager.get(params.textDocument.uri);
+    private createLspHandler<P extends TextDocumentParams, R, PR, E>(
+        event: (handler: ServerRequestHandler<P, R, PR, E>) => void,
+        handler: ProviderBase<P & ExtendedParams, R, PR, E>
+    ): void {
+        event(async (params, token, workDoneProgress, resultProgress) => {
 
-		if (composeDoc) {
-			composeDoc.updateSettings(params);
-		}
-	}
+            return await this.callWithTelemetryAndErrorHandling(handler.constructor.name, async () => {
+                const doc = this.documentManager.get(params.textDocument.uri);
+                if (!doc) {
+                    throw new ResponseError(ErrorCodes.InvalidParams, 'Document not found in cache.');
+                }
 
-	private createLspHandler<P extends TextDocumentParams, R, PR, E>(
-		event: (handler: ServerRequestHandler<P, R, PR, E>) => void,
-		handler: ProviderBase<P & ExtendedParams, R, PR, E>,
-	): void {
-		event(async (params, token, workDoneProgress, resultProgress) => {
-			return await this.callWithTelemetryAndErrorHandling(
-				handler.constructor.name,
-				async () => {
-					const doc = this.documentManager.get(
-						params.textDocument.uri,
-					);
+                const extendedParams: P & ExtendedParams = {
+                    ...params,
+                    document: doc,
+                };
 
-					if (!doc) {
-						throw new ResponseError(
-							ErrorCodes.InvalidParams,
-							"Document not found in cache.",
-						);
-					}
+                return await Promise.resolve(handler.on(extendedParams, token, workDoneProgress, resultProgress));
+            });
 
-					const extendedParams: P & ExtendedParams = {
-						...params,
-						document: doc,
-					};
+        });
+    }
 
-					return await Promise.resolve(
-						handler.on(
-							extendedParams,
-							token,
-							workDoneProgress,
-							resultProgress,
-						),
-					);
-				},
-			);
-		});
-	}
+    private createDocumentManagerHandler<P extends TextDocumentChangeEvent<ComposeDocument>>(
+        event: Event<P>,
+        handler: ProviderBase<P & ExtendedParams, void, never, never>
+    ): void {
+        event(async (params) => {
 
-	private createDocumentManagerHandler<
-		P extends TextDocumentChangeEvent<ComposeDocument>,
-	>(
-		event: Event<P>,
-		handler: ProviderBase<P & ExtendedParams, void, never, never>,
-	): void {
-		event(
-			async (params) => {
-				return await this.callWithTelemetryAndErrorHandling(
-					handler.constructor.name,
-					async () => {
-						const extendedParams: P & ExtendedParams = {
-							...params,
-							textDocument: params.document.id,
-						};
+            return await this.callWithTelemetryAndErrorHandling(handler.constructor.name, async () => {
+                const extendedParams: P & ExtendedParams = {
+                    ...params,
+                    textDocument: params.document.id,
+                };
 
-						return await Promise.resolve(
-							handler.on(extendedParams, CancellationToken.None),
-						);
-					},
-				);
-			},
-			this,
-			this.subscriptions,
-		);
-	}
+                return await Promise.resolve(handler.on(extendedParams, CancellationToken.None));
+            });
 
-	private async callWithTelemetryAndErrorHandling<R, E>(
-		callbackId: string,
-		callback: () => Promise<R>,
-	): Promise<R | ResponseError<E>> {
-		const actionContext: ActionContext = {
-			clientCapabilities: this.clientParams.capabilities,
-			connection: this.connection,
-			telemetry: initEvent(callbackId),
-		};
+        }, this, this.subscriptions);
+    }
 
-		const startTime = process.hrtime.bigint();
+    private async callWithTelemetryAndErrorHandling<R, E>(callbackId: string, callback: () => Promise<R>): Promise<R | ResponseError<E>> {
+        const actionContext: ActionContext = {
+            clientCapabilities: this.clientParams.capabilities,
+            connection: this.connection,
+            telemetry: initEvent(callbackId),
+        };
 
-		try {
-			return await runWithContext(actionContext, callback);
-		} catch (error) {
-			let responseError: ResponseError<E>;
+        const startTime = process.hrtime.bigint();
 
-			let stack: string | undefined;
+        try {
+            return await runWithContext(actionContext, callback);
+        } catch (error) {
+            let responseError: ResponseError<E>;
+            let stack: string | undefined;
 
-			if (error instanceof ResponseError) {
-				responseError = error;
+            if (error instanceof ResponseError) {
+                responseError = error;
+                stack = error.stack;
+            } else if (error instanceof Error) {
+                responseError = new ResponseError(ErrorCodes.UnknownErrorCode, error.message, error as unknown as E);
+                stack = error.stack;
+            } else {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                responseError = new ResponseError(ErrorCodes.InternalError, (error as any).toString ? (error as any).toString() : 'Unknown error');
+            }
 
-				stack = error.stack;
-			} else if (error instanceof Error) {
-				responseError = new ResponseError(
-					ErrorCodes.UnknownErrorCode,
-					error.message,
-					error as unknown as E,
-				);
+            actionContext.telemetry.properties.result = 'Failed';
+            actionContext.telemetry.properties.error = responseError.code.toString();
+            actionContext.telemetry.properties.errorMessage = responseError.message;
+            actionContext.telemetry.properties.stack = stack;
 
-				stack = error.stack;
-			} else {
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				responseError = new ResponseError(
-					ErrorCodes.InternalError,
-					(error as any).toString
-						? (error as any).toString()
-						: "Unknown error",
-				);
-			}
+            return responseError;
+        } finally {
+            const endTime = process.hrtime.bigint();
+            const elapsedMicroseconds = Number((endTime - startTime) / BigInt(1000));
+            actionContext.telemetry.measurements.duration = elapsedMicroseconds;
 
-			actionContext.telemetry.properties.result = "Failed";
-
-			actionContext.telemetry.properties.error =
-				responseError.code.toString();
-
-			actionContext.telemetry.properties.errorMessage =
-				responseError.message;
-
-			actionContext.telemetry.properties.stack = stack;
-
-			return responseError;
-		} finally {
-			const endTime = process.hrtime.bigint();
-
-			const elapsedMicroseconds = Number(
-				(endTime - startTime) / BigInt(1000),
-			);
-
-			actionContext.telemetry.measurements.duration = elapsedMicroseconds;
-
-			// The aggregator will internally handle suppressing / etc.
-			this.telemetryAggregator.logEvent(actionContext.telemetry);
-		}
-	}
+            // The aggregator will internally handle suppressing / etc.
+            this.telemetryAggregator.logEvent(actionContext.telemetry);
+        }
+    }
 }
