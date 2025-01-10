@@ -10,13 +10,13 @@
 		"unittest": "npm test -- --grep /unit/i"
 	},
 	"dependencies": {
-		"yaml": "^2.7.0"
+		"yaml": "2.7.0"
 	},
 	"devDependencies": {
-		"@types/chai": "^5.0.1",
-		"@types/chai-as-promised": "^8.0.1",
+		"@types/chai": "5.0.1",
+		"@types/chai-as-promised": "8.0.1",
 		"@types/node": "22.x",
-		"chai": "^5.1.2",
-		"chai-as-promised": "^8.0.1"
+		"chai": "5.1.2",
+		"chai-as-promised": "8.0.1"
 	}
 }
